@@ -1,0 +1,9 @@
+{
+  "_nota": "Compila gli URL SOLO dopo aver verificato nei termini d'uso della fonte che lo scaricamento automatico è consentito. Formato 'testo': una riga per estrazione, AAAA-MM-GG;[ruota;]n1;n2;... (anche GG/MM/AAAA). 'file' = percorso locale (es. un export convertito). 'ufficiale': true solo per la fonte ufficiale.",
+  "lotto":         [{"nome":"ufficiale-lotto","url":"","file":"","formato":"testo","ufficiale":true,"attiva":false},
+                    {"nome":"secondaria-lotto","url":"","file":"","formato":"testo","ufficiale":false,"attiva":false}],
+  "superenalotto": [{"nome":"ufficiale-superenalotto","url":"","file":"","formato":"testo","ufficiale":true,"attiva":false},
+                    {"nome":"secondaria-superenalotto","url":"","file":"","formato":"testo","ufficiale":false,"attiva":false}],
+  "vincicasa":     [{"nome":"ufficiale-vincicasa","url":"","file":"","formato":"testo","ufficiale":true,"attiva":false},
+                    {"nome":"secondaria-vincicasa","url":"","file":"","formato":"testo","ufficiale":false,"attiva":false}]
+}
