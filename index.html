@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Statistica – analisi dei numeri di Lotto, SuperEnalotto e VinciCasa</title>
+<style>
+:root{--bg:#f6f7f9;--sf:#fff;--ink:#17202b;--mu:#5b6675;--ln:#dfe3e9;--ac:#0e6b8a;--am:#b9770e;--rd:#b3372c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f151c;--sf:#171f28;--ink:#e8edf3;--mu:#97a3b2;--ln:#273341;--ac:#5cc0e0;--am:#e3a640;--rd:#ef8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f151c;--sf:#171f28;--ink:#e8edf3;--mu:#97a3b2;--ln:#273341;--ac:#5cc0e0;--am:#e3a640;--rd:#ef8a80;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--sf);border-bottom:1px solid var(--ln);z-index:5}
+.in{max-width:980px;margin:0 auto;padding:0 16px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;margin:0 0 .5rem}
+.brand{font:700 1.25rem Georgia,serif;padding:12px 0 4px}
+nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}
+nav a{white-space:nowrap;padding:6px 12px;border-radius:99px;color:var(--mu);text-decoration:none;font-size:.92rem}
+nav a.on{background:var(--ac);color:var(--sf)}
+main{padding:20px 16px 48px;max-width:980px;margin:0 auto}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:16px}
+.mu{color:var(--mu);font-size:.9rem}.note{border-left:3px solid var(--am);padding:6px 12px;background:var(--sf);margin:12px 0;font-size:.92rem}
+.balls{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.b{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--ac);font-weight:700;font-size:.9rem}
+.b.x{border-color:var(--am)}.b.s{border-style:dashed}
+.bar{display:grid;grid-template-columns:34px 1fr 52px;gap:8px;align-items:center;font-size:.85rem;margin:3px 0}
+.bar i{display:block;height:12px;background:var(--ac);border-radius:3px}.bar.am i{background:var(--am)}
+select,button,textarea{font:inherit;color:var(--ink);background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:8px 10px}
+button{background:var(--ac);color:var(--sf);border:0;font-weight:600;cursor:pointer}button.g{background:transparent;color:var(--ink);border:1px solid var(--ln)}
+textarea{width:100%;min-height:150px;font-family:ui-monospace,monospace;font-size:.85rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:.9rem}td,th{padding:6px 4px;border-bottom:1px solid var(--ln);text-align:left}
+.wrap{overflow-x:auto}a:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+footer{max-width:980px;margin:0 auto;padding:16px;color:var(--mu);font-size:.85rem;border-top:1px solid var(--ln)}
+.ok{color:var(--ac);font-weight:600}.no{color:var(--rd);font-weight:600}
+</style></head><body>
+<header><div class="in"><div class="brand">Statistica</div>
+<nav id="nav"></nav></div></header>
+<main id="m"></main>
+<footer>Vietato ai minori di 18 anni. Questo sito è uno strumento di informazione statistica: non accetta giocate, non fa previsioni e non promette vincite. Il gioco può causare dipendenza: gioca con responsabilità.</footer>
+<script>
+const G={lotto:{nome:'Lotto',N:90,K:5,gg:[2,4,5,6],rule:`Su ognuna delle 11 ruote (Bari, Cagliari, Firenze, Genova, Milano, Napoli, Palermo, Roma, Torino, Venezia, Nazionale) escono 5 numeri da 1 a 90. Si possono giocare da 1 a 10 numeri e puntare su estratto, estratto determinato, ambo, ambetto, terno, quaterna e cinquina. Estrazioni: martedì, giovedì, venerdì e sabato, di norma verso le 20:00.`},
+superenalotto:{nome:'SuperEnalotto',N:90,K:6,gg:[2,4,5,6],rule:`Escono 6 numeri da 1 a 90. Il Jolly e il SuperStar sono estratti a parte: il Jolly serve per la categoria 5+Jolly, il SuperStar è un gioco opzionale collegato. Categorie: 2, 3, 4, 5, 5+Jolly e 6 (il 6 vince il jackpot). Estrazioni: martedì, giovedì, venerdì e sabato, di norma verso le 20:00.`},
+vincicasa:{nome:'VinciCasa',N:40,K:5,gg:[0,1,2,3,4,5,6],rule:`Escono 5 numeri da 1 a 40; l’ordine non conta. Si vince con 5, 4, 3 o 2 numeri esatti. Estrazione ogni giorno, di norma verso le 20:00. Importi e ripartizione dei premi (anche la parte in denaro e quella per l’acquisto di una casa) vanno verificati sul regolamento ufficiale in vigore.`}};
+const R=['Bari','Cagliari','Firenze','Genova','Milano','Napoli','Palermo','Roma','Torino','Venezia','Nazionale'];
+const FONTI={lotto:'https://www.lotto-italia.it/',superenalotto:'https://www.superenalotto.it/',vincicasa:'https://www.vincicasa.it/'};
+const PAGES=[['home','Home'],['lotto','Lotto'],['superenalotto','SuperEnalotto'],['vincicasa','VinciCasa'],['analisi','Analisi'],['archivio','Archivio'],['metodologia','Metodologia'],['progetto','Il progetto']];
+let D={lotto:[],superenalotto:[],vincicasa:[]},META={};
+try{const s=localStorage.getItem('stat_d');if(s){const o=JSON.parse(s);D=o.D||D;META=o.M||{}}}catch(e){}
+const save=()=>{try{localStorage.setItem('stat_d',JSON.stringify({D,M:META}))}catch(e){}};
+const $=s=>document.querySelector(s);
+const ball=(n,c='')=>`<span class="b ${c}">${n}</span>`;
+const C=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r)};
+const fmt=n=>n.toLocaleString('it-IT');
+/* ---- dati ---- */
+function importa(g,txt){const {N,K}=G[g];let ok=0,bad=0;const seen=new Set(D[g].map(x=>x.d+'|'+(x.r||'')));
+for(const raw of txt.split(/\n/)){const l=raw.trim();if(!l)continue;let p=l.split(/[;,\t]+/).map(s=>s.trim()),d=p.shift();
+if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){bad++;continue}let r='';if(g==='lotto'){r=p.shift()||'';r=R.find(x=>x.toLowerCase()===r.toLowerCase());if(!r){bad++;continue}}
+const v=p.map(Number);const n=v.slice(0,K),x=v.slice(K);
+if(n.length!==K||n.some(a=>!Number.isInteger(a)||a<1||a>N)||new Set(n).size!==K||x.some(a=>!Number.isInteger(a)||a<1||a>90)){bad++;continue}
+const key=d+'|'+r;if(seen.has(key))continue;seen.add(key);D[g].push({d,r,n:n.slice().sort((a,b)=>a-b),x});ok++}
+D[g].sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);META[g]=new Date().toISOString();META.all=META[g];save();return{ok,bad}}
+function draws(g,ruota){const A=D[g];if(g!=='lotto')return A.map(x=>({d:x.d,sets:[x.n],x:x.x}));
+if(ruota&&ruota!=='Tutte')return A.filter(x=>x.r===ruota).map(x=>({d:x.d,sets:[x.n]}));
+const m=new Map();A.forEach(x=>{if(!m.has(x.d))m.set(x.d,{d:x.d,sets:[]});m.get(x.d).sets.push(x.n)});return[...m.values()]}
+function stats(g,L){const {N}=G[g];const f=new Array(N+1).fill(0),last=new Array(N+1).fill(-1),gaps=[...Array(N+1)].map(_=>[]);let tot=0,sets=0;
+const par={},pair={};L.forEach((dr,i)=>{dr.sets.forEach(s=>{sets++;let o=0;s.forEach(n=>{f[n]++;tot++;if(n%2)o++});par[o]=(par[o]||0)+1;
+for(let a=0;a<s.length;a++)for(let b=a+1;b<s.length;b++){const k=s[a]+'-'+s[b];pair[k]=(pair[k]||0)+1}});
+new Set(dr.sets.flat()).forEach(n=>{if(last[n]>=0)gaps[n].push(i-last[n]);last[n]=i})});
+const delay=last.map((l,n)=>l<0?null:L.length-1-l);return{f,delay,gaps,par,pair,tot,sets,N:L.length}}
+/* chi-quadro e p-value */
+function gq(a,x){if(x<=0)return 1;const g=lg(a);if(x<a+1){let s=1/a,t=s,n=a;for(let i=0;i<500;i++){n++;t*=x/n;s+=t;if(Math.abs(t)<Math.abs(s)*1e-12)break}return 1-s*Math.exp(-x+a*Math.log(x)-g)}
+let b=x+1-a,c=1e300,d=1/b,h=d;for(let i=1;i<500;i++){const an=-i*(i-a);b+=2;d=an*d+b;if(Math.abs(d)<1e-300)d=1e-300;c=b+an/c;if(Math.abs(c)<1e-300)c=1e-300;d=1/d;const e=d*c;h*=e;if(Math.abs(e-1)<1e-12)break}return Math.exp(-x+a*Math.log(x)-g)*h}
+function lg(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,.001208650973866179,-5.395239384953e-6];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;c.forEach(v=>s+=v/++y);return -t+Math.log(2.5066282746310005*s/x)}
+function chi(f,N,tot){const e=tot/N;let s=0;for(let n=1;n<=N;n++)s+=(f[n]-e)**2/e;return{s,df:N-1,p:gq((N-1)/2,s/2)}}
+/* grafici */
+function bars(items,max,cl=''){return items.map(([l,v,t])=>`<div class="bar ${cl}"><b>${l}</b><i style="width:${max?Math.max(1,v/max*100):0}%"></i><span>${t??v}</span></div>`).join('')}
+function prossima(g){const n=new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Rome'}));for(let i=0;i<8;i++){const d=new Date(n);d.setDate(n.getDate()+i);if(G[g].gg.includes(d.getDay())&&(i>0||n.getHours()<20))return d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})+', verso le 20:00'}return'—'}
+const sel=(id,opts,v)=>`<select id="${id}">${opts.map(o=>`<option value="${o[0]}"${o[0]==v?' selected':''}>${o[1]}</option>`).join('')}</select>`;
+const FIN=[[10,'Ultime 10'],[50,'Ultime 50'],[100,'Ultime 100'],[500,'Ultime 500'],[1000,'Ultime 1.000'],[0,'Tutto l’archivio']];
+/* pagine */
+const V={};let st={w:0,r:'Tutte'};
+V.home=()=>{const c=Object.keys(G).map(g=>{const A=D[g],u=A.length?(g==='lotto'?A.filter(x=>x.d===A[A.length-1].d):[A[A.length-1]]):[];
+let body=`<p class="mu">Nessun dato caricato. Vai su <a href="#archivio">Archivio</a> per importare le estrazioni ufficiali.</p>`;
+if(u.length)body=`<p class="mu">Ultima estrazione: ${u[0].d.split('-').reverse().join('/')}</p>`+u.map(x=>`${g==='lotto'?`<b>${x.r}</b>`:''}<div class="balls">${x.n.map(n=>ball(n)).join('')}${x.x.map((n,i)=>ball(n,g==='superenalotto'&&i===1?'x s':'x')).join('')}</div>`).join('')+(g==='superenalotto'&&u[0].x.length?`<p class="mu">Numeri arancioni: Jolly e SuperStar (quest’ultimo con il bordo tratteggiato), se presenti nei dati.</p>`:'');
+return`<div class="card"><h3><a href="#${g}" style="color:inherit">${G[g].nome}</a></h3>${body}<p class="mu">Prossima estrazione: ${prossima(g)}</p></div>`}).join('');
+const t=META.all?new Date(META.all).toLocaleString('it-IT',{timeZone:'Europe/Rome'}):'mai';
+return`<h1>Statistiche chiare su tre giochi</h1><p class="mu">Frequenze, ritardi e test sui numeri estratti, spiegati in italiano semplice. Ogni numero resta imprevedibile: qui si misura il passato, non si prevede il futuro.</p><div class="grid">${c}</div>
+<div class="card" style="margin-top:14px"><b>Stato dei dati</b><p class="mu">Ultimo import: ${t}. Verifica automatica con le fonti ufficiali: ${META.remote?'<span class="ok">attiva</span> (aggiornamento programmato, dati letti dai file .json)':'<span class="no">non attiva</span> (serve il backend con aggiornamento programmato)'}. Controlla sempre i risultati su ${Object.values(FONTI).map(u=>`<a href="${u}" rel="noopener">${u.replace(/https:\/\/www\.|\//g,'')}</a>`).join(', ')}.</p></div>`};
+function game(g){const o=G[g];const L0=draws(g,st.r),L=st.w?L0.slice(-st.w):L0;
+let h=`<h1>${o.nome}</h1><p class="mu">${o.rule}</p><p class="mu">Probabilità di indovinare tutti i ${o.K} numeri con una combinazione: 1 su ${fmt(C(o.N,o.K))}.</p>`;
+h+=`<div class="row">${sel('fw',FIN,st.w)}${g==='lotto'?sel('fr',[['Tutte','Tutte le ruote'],...R.map(r=>[r,r])],st.r):''}</div>`;
+if(!L.length)return h+`<div class="note">Nessuna estrazione caricata per ${o.nome}. Importa i dati dall’<a href="#archivio">Archivio</a>.</div>`;
+const s=stats(g,L),idx=[...Array(o.N)].map((_,i)=>i+1),ex=s.tot/o.N;
+const top=idx.slice().sort((a,b)=>s.f[b]-s.f[a]),bot=idx.slice().sort((a,b)=>s.f[a]-s.f[b]);
+const dl=idx.filter(n=>s.delay[n]!==null).sort((a,b)=>s.delay[b]-s.delay[a]);
+const x=chi(s.f,o.N,s.tot),pr=Object.entries(s.pair).sort((a,b)=>b[1]-a[1]).slice(0,8);
+const maxf=s.f[top[0]],ou=Object.keys(s.par).map(Number).sort((a,b)=>a-b);
+h+=`<div class="note">Estrazioni analizzate: ${s.N} (dal ${L[0].d} al ${L[L.length-1].d}). Frequenza attesa per numero se tutto è casuale: ${ex.toFixed(1)} volte.${s.N<30?' <b>Pochi dati: i risultati non sono significativi.</b>':''}</div><div class="grid">
+<div class="card"><h3>Più frequenti</h3>${bars(top.slice(0,10).map(n=>[n,s.f[n]]),maxf)}<p class="mu">Quante volte è uscito ogni numero. Uscire spesso non rende un numero più probabile in futuro.</p></div>
+<div class="card"><h3>Meno frequenti</h3>${bars(bot.slice(0,10).map(n=>[n,s.f[n]]),maxf,'am')}<p class="mu">I numeri usciti meno volte nel periodo scelto.</p></div>
+<div class="card"><h3>Ritardi maggiori</h3>${bars(dl.slice(0,10).map(n=>[n,s.delay[n],s.delay[n]+' est.']),s.delay[dl[0]]||1,'am')}<p class="mu">Da quante estrazioni un numero non esce. Un ritardo lungo non lo rende “dovuto”: ogni estrazione è indipendente.</p></div>
+<div class="card"><h3>Dispari e pari</h3>${bars(ou.map(k=>[k,s.par[k],`${(s.par[k]/s.sets*100).toFixed(0)}%`]),Math.max(...Object.values(s.par)))}<p class="mu">Per ogni riga: quanti numeri dispari (a sinistra) sono usciti in una combinazione, e in che percentuale dei casi.</p></div>
+<div class="card"><h3>Coppie più frequenti</h3>${g==='lotto'&&st.r==='Tutte'?'<p class="mu">Scegli una ruota per vedere le coppie.</p>':`<table>${pr.map(([k,v])=>`<tr><td>${k.split('-').map(n=>ball(n)).join('')}</td><td>${v} volte</td></tr>`).join('')}</table><p class="mu">Coppie di numeri usciti insieme.</p>`}</div>
+<div class="card"><h3>Test chi-quadro</h3><p>χ² = ${x.s.toFixed(1)} su ${x.df} gradi di libertà<br>p-value ≈ ${x.p.toFixed(3)}</p><p class="${x.p<.05?'no':'ok'}">${x.p<.05?'Differenza insolita rispetto al caso (da interpretare con cautela).':'Nessuna differenza significativa rispetto al caso.'}</p><p class="mu">Confronta le frequenze osservate con quelle attese in un’estrazione perfettamente casuale. Un p-value sotto 0,05 capita per caso 1 volta su 20.</p></div></div>`;
+return h}
+V.lotto=()=>game('lotto');V.superenalotto=()=>game('superenalotto');V.vincicasa=()=>game('vincicasa');
+V.analisi=()=>{const o=Object.keys(G).map(g=>[g,G[g].nome]);return`<h1>Analisi statistica</h1><p class="mu">Test di casualità sull’intero archivio caricato, con simulazione Monte Carlo: si estraggono a caso fino a 1.000.000 di combinazioni e si vede quanto è raro il risultato reale.</p>
+<div class="row">${sel('ag',o,st.ag||'lotto')}<button id="go">Esegui l’analisi</button></div><div id="out" class="card"><p class="mu">Scegli un gioco e premi il pulsante.</p></div>
+<div class="note">Per ogni gioco il motore è indipendente. Con molti test insieme qualche risultato “anomalo” compare sempre per caso: non è una scoperta.</div>`};
+function mc(g){const o=G[g],L=draws(g,'Tutte'),out=$('#out');if(!L.length){out.innerHTML='<p class="no">Nessun dato caricato per questo gioco.</p>';return}
+const s=stats(g,L),x=chi(s.f,o.N,s.tot),M=Math.max(200,Math.floor(1e6/s.sets)),per=s.sets/L.length;let i=0,ge=0;const {N,K}=o;
+const sets=L.map(d=>d.sets.length);
+(function run(){const t=Date.now();while(i<M&&Date.now()-t<40){const c=new Int32Array(N+1);for(const q of sets)for(let z=0;z<q;z++){const a=[];while(a.length<K){const r=1+(Math.random()*N|0);if(!a.includes(r))a.push(r)}a.forEach(r=>c[r]++)}
+let v=0;const e=s.tot/N;for(let n=1;n<=N;n++)v+=(c[n]-e)**2/e;if(v>=x.s)ge++;i++}
+out.innerHTML=`<p class="mu">Simulazione: ${fmt(i)} di ${fmt(M)} serie casuali (${fmt(i*s.sets)} estrazioni simulate)…</p>`;
+if(i<M)return setTimeout(run,0);const pe=(ge+1)/(M+1);
+out.innerHTML=`<h3>${o.nome}</h3><p>Estrazioni nell’archivio: ${s.N}. Numeri estratti: ${fmt(s.tot)}.</p><p>Chi-quadro: χ² = ${x.s.toFixed(1)} (${x.df} g.d.l.), p teorico ≈ ${x.p.toFixed(3)}.</p><p>Monte Carlo: p simulato ≈ ${pe.toFixed(3)} (${fmt(ge)} serie casuali su ${fmt(M)} hanno uno scarto uguale o maggiore).</p><p class="${pe<.05?'no':'ok'}">${pe<.05?'Scarto raro se tutto fosse casuale, ma un singolo test non prova nulla.':'I dati sono compatibili con l’estrazione casuale.'}</p><p class="mu">Se il p-value è alto, i numeri si comportano come attesi dal caso. Per correggere i test multipli, abbassa la soglia (es. 0,05 diviso il numero di test).</p>`})()}
+V.archivio=()=>{const gs=Object.keys(G).map(g=>[g,G[g].nome]);const g=st.ag||'lotto';
+const rows=D[g].slice(-15).reverse().map(x=>`<tr><td>${x.d}</td><td>${x.r||''}</td><td>${x.n.join(' ')}${x.x.length?' + '+x.x.join(' '):''}</td></tr>`).join('');
+return`<h1>Archivio storico</h1><p class="mu">Importa le estrazioni ufficiali, una per riga: <code>AAAA-MM-GG; numero; numero…</code>. Per il Lotto aggiungi la ruota dopo la data (es. <code>2025-01-04; Bari; 3; 17; 28; 55; 90</code>). Per il SuperEnalotto, dopo i 6 numeri, puoi aggiungere Jolly e SuperStar. I dati restano solo nel tuo browser.</p>
+<div class="row">${sel('ag',gs,g)}<span class="mu">${D[g].length} righe salvate</span></div><textarea id="ta" placeholder="2025-01-04; 5; 12; 23; 31; 40"></textarea>
+<div class="row"><button id="imp">Importa</button><button class="g" id="exp">Esporta CSV</button><button class="g" id="clr">Cancella i dati di questo gioco</button></div><p id="msg" class="mu"></p>
+<div class="wrap"><table><tr><th>Data</th><th>Ruota</th><th>Numeri</th></tr>${rows||'<tr><td colspan=3 class="mu">Nessun dato.</td></tr>'}</table></div>
+<div class="row"><b>Cerca per numero:</b><input id="q" type="number" min="1" max="90" style="width:80px;padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--sf);color:var(--ink)"><span id="qr" class="mu"></span></div>`};
+V.metodologia=()=>`<h1>Metodologia</h1><div class="card"><p><b>Frequenza</b>: quante volte un numero è uscito nel periodo scelto. <b>Ritardo</b>: da quante estrazioni non esce. Entrambi descrivono il passato.</p><p><b>Chi-quadro</b>: misura quanto le frequenze reali si allontanano da quelle attese per puro caso. <b>Monte Carlo</b>: il computer simula fino a 1.000.000 di estrazioni casuali e conta quante volte lo scarto è grande quanto quello reale. <b>Significatività</b>: un p-value sotto 0,05 indica un risultato raro per caso, non un metodo per vincere.</p><p>Ogni estrazione è indipendente: un numero in ritardo o frequente non ha più probabilità di uscire. Nessun metodo qui presente prevede le estrazioni.</p><p>Il backtesting (verifica di un metodo sul passato usando solo dati precedenti a ogni estrazione) non è ancora implementato in questa versione.</p></div>
+<div class="card" style="margin-top:14px"><b>Tipi di informazione</b><ul><li>Dati ufficiali: quelli che importi dalle fonti ufficiali.</li><li>Statistiche calcolate: ricalcolate qui dai dati caricati.</li><li>Simulazioni: Monte Carlo.</li></ul></div>`;
+V.progetto=()=>`<h1>Il progetto</h1><div class="card"><p>Statistica è un sito di informazione statistica sui numeri estratti di Lotto, SuperEnalotto e VinciCasa. Non è un sito di giochi: niente giocate, niente conti, niente previsioni.</p><p><b>Stato attuale:</b> interfaccia e motore statistico funzionano nel browser sui dati che importi. Mancano, perché richiedono un server: raccolta automatica dei risultati, aggiornamento programmato ogni giorno (fuso Europe/Rome), archivio storico completo, backtesting e pannello amministratore.</p></div>`;
+/* routing */
+function go(){const p=(location.hash||'#home').slice(1);const pg=V[p]?p:'home';
+$('#nav').innerHTML=PAGES.map(([k,n])=>`<a href="#${k}"${k===pg?' class="on" aria-current="page"':''}>${n}</a>`).join('');
+$('#m').innerHTML=V[pg]();bind(pg);window.scrollTo(0,0)}
+function bind(p){const w=$('#fw');if(w)w.onchange=e=>{st.w=+e.target.value;redraw(p)};const r=$('#fr');if(r)r.onchange=e=>{st.r=e.target.value;redraw(p)};
+const ag=$('#ag');if(ag)ag.onchange=e=>{st.ag=e.target.value;if(p==='archivio')go()};
+if($('#go'))$('#go').onclick=()=>mc($('#ag').value);
+if($('#imp'))$('#imp').onclick=()=>{const r=importa($('#ag').value,$('#ta').value);go();$('#msg').textContent=`Importate ${r.ok} righe; ${r.bad} scartate perché non valide.`};
+if($('#clr'))$('#clr').onclick=()=>{D[$('#ag').value]=[];save();go()};
+if($('#exp'))$('#exp').onclick=()=>{const g=$('#ag').value,t=D[g].map(x=>[x.d,x.r,...x.n,...x.x].filter(v=>v!=='').join(';')).join('\n');$('#ta').value=t};
+if($('#q'))$('#q').oninput=e=>{const n=+e.target.value,g=$('#ag').value;const c=D[g].filter(x=>x.n.includes(n)).length;$('#qr').textContent=n?`Uscito ${c} volte su ${D[g].length} righe.`:''}}
+function redraw(p){$('#m').innerHTML=V[p]();bind(p)}
+addEventListener('hashchange',go);go();
+(async()=>{try{let ch=false;for(const g of Object.keys(G)){const r=await fetch(g+'.json',{cache:'no-store'});if(!r.ok)continue;const a=await r.json();if(Array.isArray(a)&&a.length){D[g]=a;ch=true}}
+const m=await fetch('meta.json',{cache:'no-store'});if(m.ok){const j=await m.json();META.remote=j;if(j.ultimo_aggiornamento)META.all=j.ultimo_aggiornamento;ch=true}if(ch)go()}catch(e){}})();
+</script></body></html>
